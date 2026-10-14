@@ -1,0 +1,9 @@
+# window 是已兑现的训练标签数量，lookback 是每个样本使用的历史天数。
+window: 1000
+lookback: 20
+# 首轮探索设置，尚未进行验证期调参。
+epochs: 20
+hidden: 16
+learning_rate: 0.01
+weight_decay: 0.001
+seed: 42

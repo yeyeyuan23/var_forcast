@@ -1,0 +1,7 @@
+# 起始配置，尚未通过验证期选择。仅当前模型使用这些参数。
+window: 1000
+epochs: 100
+hidden: 16
+learning_rate: 0.01
+weight_decay: 0.001
+seed: 42

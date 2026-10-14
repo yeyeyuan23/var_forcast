@@ -1,0 +1,11 @@
+# 一次只运行一个模型：historical、linear_qr 、mlp_qr 或 gru_qr。
+# 对应窗口和超参数读取 config/<模型名>.yaml。
+model: gru_qr
+
+# 最后 1000 个交易日逐日预测；本次是探索性运行，不是未查看的最终测试集。
+test_size: 1000
+alphas: [0.01, 0.05, 0.10]
+
+# 路径相对于此文件。结果自动写入 <output>/<model>/<运行时间>/。
+data: ../../spy_data.csv
+output: ../../results

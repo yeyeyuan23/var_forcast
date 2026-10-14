@@ -73,7 +73,10 @@ def test_model_lists_and_all_are_rejected(tmp_path, model):
 def test_historical_import_does_not_import_neural_dependencies():
     command = "from var_forcast.models import forecast; import sys; assert 'torch' not in sys.modules"
     result = subprocess.run(
-        [sys.executable, "-c", command], capture_output=True, text=True
+        [sys.executable, "-c", command],
+        cwd=Path(__file__).resolve().parents[2],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stderr
 

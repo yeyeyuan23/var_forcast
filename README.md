@@ -33,13 +33,13 @@
 
 ## 一次只运行一个模型
 
-在项目根目录：
+在本代码仓库目录中运行：
 
 ```bash
-python -m var_forcast.run
+python run.py
 ```
 
-也可以进入此文件夹运行 `python run.py`。不接受命令行参数、不接受模型列表或 `all`。
+也可以从其父目录运行 `python -m var_forcast.run`。不接受命令行参数、不接受模型列表或 `all`。
 
 `config/experiment.yaml` 只配置本次实验：
 
@@ -159,7 +159,7 @@ var_forcast/
 数据探索的正式入口是 `exploration/run.py`，窗口在 `config/exploration.yaml` 中配置：
 
 ```bash
-python -m var_forcast.exploration.run
+python exploration/run.py
 ```
 
 输出默认位于代码库外的 `../results/exploration/`。探索只生成统计表和图，不负责研究报告的文字与 PDF 排版。

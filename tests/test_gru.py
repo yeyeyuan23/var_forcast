@@ -25,9 +25,10 @@ def test_sequence_features_are_chronological_and_end_before_target():
         assert raw.index[k + 2] < table.index[k + 2]
 
 
-def test_gru_keeps_all_training_labels_and_extra_input_history(monkeypatch):
+@pytest.mark.parametrize("model", ["mlp_qr", "gru_qr"])
+def test_network_keeps_all_training_labels_and_extra_input_history(monkeypatch, model):
     table = data.make_supervised(sample_data())
-    config = Config(model="gru_qr", window=30, lookback=5, epochs=2)
+    config = Config(model=model, window=30, lookback=5, epochs=2)
     observed = []
 
     def capture(method, X, y, x, settings):
@@ -62,7 +63,10 @@ def test_gru_uses_only_training_sequence_statistics():
     assert np.isfinite(constant).all() and np.isfinite(constant_next).all()
 
 
-def test_gru_end_to_end_loads_one_config_and_records_sequence_length(tmp_path):
+@pytest.mark.parametrize("model", ["mlp_qr", "gru_qr"])
+def test_network_end_to_end_loads_one_config_and_records_sequence_length(
+    tmp_path, model
+):
     from var_forcast.run import main
 
     sample_data().to_csv(tmp_path / "data.csv")
@@ -70,7 +74,7 @@ def test_gru_end_to_end_loads_one_config_and_records_sequence_length(tmp_path):
     config_path.write_text(
         yaml.safe_dump(
             dict(
-                model="gru_qr",
+                model=model,
                 test_size=2,
                 alphas=[0.01, 0.05, 0.1],
                 data="data.csv",
@@ -78,7 +82,7 @@ def test_gru_end_to_end_loads_one_config_and_records_sequence_length(tmp_path):
             )
         )
     )
-    (tmp_path / "gru_qr.yaml").write_text(
+    (tmp_path / f"{model}.yaml").write_text(
         yaml.safe_dump(
             dict(
                 window=30,
@@ -91,7 +95,7 @@ def test_gru_end_to_end_loads_one_config_and_records_sequence_length(tmp_path):
             )
         )
     )
-    (tmp_path / "mlp_qr.yaml").write_text("broken: [")
+    (tmp_path / "historical.yaml").write_text("broken: [")
     experiment = load_experiment(config_path)
     assert experiment.config.lookback == 5
     output = main(config_path)
@@ -100,7 +104,7 @@ def test_gru_end_to_end_loads_one_config_and_records_sequence_length(tmp_path):
     assert manifest["input_lookback"] == manifest["config"]["lookback"] == 5
     assert "torch" in manifest["versions"]
     predictions = pd.read_csv(output / "predictions.csv")
-    assert predictions.model.unique().tolist() == ["gru_qr"]
+    assert predictions.model.unique().tolist() == [model]
     assert len(predictions) == 6 and (predictions.n_train == 30).all()
     assert (output / "var_forecasts.png").exists()
 
@@ -109,3 +113,42 @@ def test_gru_end_to_end_loads_one_config_and_records_sequence_length(tmp_path):
 def test_invalid_sequence_length_is_rejected(lookback):
     with pytest.raises(ValueError):
         Config(model="gru_qr", lookback=lookback)
+
+
+def test_mlp_and_gru_receive_identical_history_and_labels(monkeypatch):
+    table = data.make_supervised(sample_data())
+    observed = {}
+
+    def capture(method, X, y, x, config):
+        observed[method] = (X.copy(), y.copy(), x.copy())
+        return np.quantile(y, config.alphas)
+
+    monkeypatch.setattr(backtest, "forecast", capture)
+    for model in ("mlp_qr", "gru_qr"):
+        backtest.rolling_backtest(
+            table, 40, 41, Config(model=model, window=30, lookback=5)
+        )
+    for mlp, gru in zip(observed["mlp_qr"], observed["gru_qr"]):
+        np.testing.assert_array_equal(mlp, gru)
+
+
+def test_mlp_flattens_the_same_standardized_sequence_as_gru(monkeypatch):
+    from var_forcast.models import mlp_qr, gru_qr
+
+    X = np.arange(36, dtype=float).reshape(4, 3, 3)
+    x = np.arange(36, 45, dtype=float).reshape(1, 3, 3)
+    expected_X, expected_x = gru_qr.standardize_sequences(X, x)
+    observed = {}
+
+    def capture(X_train, y_train, x_next, config):
+        observed.update(X=X_train.copy(), x=x_next.copy(), y=y_train.copy())
+        return np.array([-3.0, -2.0, -1.0])
+
+    monkeypatch.setattr(mlp_qr, "fit_mlp_quantiles", capture)
+    y = np.array([-0.02, 0.01, -0.01, 0.02])
+    prediction = mlp_qr.forecast(X, y, x, Config(model="mlp_qr", lookback=3))
+    assert observed["X"].shape == (4, 9)
+    np.testing.assert_array_equal(observed["X"], expected_X.reshape(4, 9))
+    np.testing.assert_array_equal(observed["x"], expected_x.reshape(1, 9))
+    np.testing.assert_allclose(observed["y"], 100 * y)
+    np.testing.assert_allclose(prediction, [-0.03, -0.02, -0.01])

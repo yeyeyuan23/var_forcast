@@ -53,7 +53,9 @@ def make_manifest(experiment, data, table, start):
         test_start=str(table.index[start].date()),
         test_end=str(table.index[-1].date()),
         features=[] if model == "historical" else FEATURES,
-        input_lookback=experiment.config.lookback if model == "gru_qr" else 1,
+        input_lookback=experiment.config.lookback
+        if model in ("mlp_qr", "gru_qr")
+        else 1,
         refit="daily, from scratch; fixed-size trailing window",
         target="next trading-day log-return quantiles, decimal units",
         quantile_postprocessing="increasing rearrangement; raw outputs retained",

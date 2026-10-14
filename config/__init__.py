@@ -26,7 +26,15 @@ MODEL_FIELDS = {
     ),
     "historical": ("window",),
     "linear_qr": ("window", "l1_penalty"),
-    "mlp_qr": ("window", "epochs", "hidden", "learning_rate", "weight_decay", "seed"),
+    "mlp_qr": (
+        "window",
+        "lookback",
+        "epochs",
+        "hidden",
+        "learning_rate",
+        "weight_decay",
+        "seed",
+    ),
 }
 
 

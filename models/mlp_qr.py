@@ -3,7 +3,7 @@
 import numpy as np
 import torch
 from torch import nn
-from .common import standardize_window
+from .common import standardize_window, standardize_sequences
 
 
 def fit_mlp_quantiles(X_train, y_train, x_next, config):
@@ -45,6 +45,12 @@ def fit_mlp_quantiles(X_train, y_train, x_next, config):
 
 def forecast(X_train, y_train, x_next, config):
     """标准化特征，以百分数单位训练，再将预测还原为小数单位。"""
-    X, x = standardize_window(X_train, x_next)
+    if X_train.ndim == 3:
+        # 先与 GRU 使用相同的逐指标标准化，再按从早到晚展开为 L*3 个输入。
+        X, x = standardize_sequences(X_train, x_next)
+        X = X.reshape(len(X), -1)
+        x = x.reshape(len(x), -1)
+    else:
+        X, x = standardize_window(X_train, x_next)
     y = 100.0 * y_train
     return fit_mlp_quantiles(X, y, x, config).astype(float) / 100.0

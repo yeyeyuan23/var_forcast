@@ -24,7 +24,7 @@ def main(config_path=DEFAULT_CONFIG):
     data = load_data(experiment.data)
     table = make_supervised(data)
     start = len(table) - experiment.test_size
-    extra_history = config.lookback - 1 if config.model == "gru_qr" else 0
+    extra_history = config.lookback - 1 if config.model in ("mlp_qr", "gru_qr") else 0
     if start < config.window + extra_history:
         raise ValueError(
             "test_size 太大：必须为训练窗口、序列输入和最初滞后留出足够数据"

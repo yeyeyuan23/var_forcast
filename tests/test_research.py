@@ -38,7 +38,10 @@ def test_future_values_and_prefix_length_cannot_change_forecast(method):
     raw = sample_data()
     table = make_supervised(raw)
     config = Config(
-        window=30, model=method, epochs=4, lookback=5 if method == "gru_qr" else 1
+        window=30,
+        model=method,
+        epochs=4,
+        lookback=5 if method in ("mlp_qr", "gru_qr") else 1,
     )
     first = rolling_backtest(table, 40, 41, config)
     changed = raw.copy()

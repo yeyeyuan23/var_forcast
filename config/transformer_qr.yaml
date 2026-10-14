@@ -1,0 +1,8 @@
+window: 500
+lookback: 20
+epochs: 20
+hidden: 8
+heads: 2
+learning_rate: 0.01
+weight_decay: 0.001
+seed: 42

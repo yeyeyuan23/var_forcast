@@ -27,13 +27,16 @@ def create_run_directory(experiment):
     return output
 
 
-def make_manifest(experiment, data, table, start):
+def make_manifest(experiment, data, table, start, stop=None):
+    stop = len(table) if stop is None else stop
     model = experiment.config.model
     dependencies = ["numpy", "pandas", "scipy", "PyYAML", "matplotlib"]
     if model == "linear_qr":
         dependencies.append("scikit-learn")
-    if model in ("mlp_qr", "gru_qr"):
+    if model in ("mlp_qr", "gru_qr", "transformer_qr"):
         dependencies.append("torch")
+    if model == "garch":
+        dependencies.append("arch")
     config = asdict(experiment.config)
     config = {key: config[key] for key in ("model", "alphas", *MODEL_FIELDS[model])}
     root = Path(__file__).resolve().parents[1]
@@ -49,18 +52,18 @@ def make_manifest(experiment, data, table, start):
         data_end=str(data.index[-1].date()),
         n_raw=len(data),
         n_supervised=len(table),
-        n_test=len(table) - start,
+        n_test=stop - start,
         test_start=str(table.index[start].date()),
-        test_end=str(table.index[-1].date()),
-        features=[] if model == "historical" else FEATURES,
+        test_end=str(table.index[stop - 1].date()),
+        features=[] if model in ("historical", "garch") else FEATURES,
         input_lookback=experiment.config.lookback
-        if model in ("mlp_qr", "gru_qr")
+        if model in ("mlp_qr", "gru_qr", "transformer_qr")
         else 1,
         refit="daily, from scratch; fixed-size trailing window",
         target="next trading-day log-return quantiles, decimal units",
         quantile_postprocessing="increasing rearrangement; raw outputs retained",
         evaluation_role="exploratory; previously viewed evaluation period",
-        hyperparameter_selection="fixed starting settings; no validation search in this run",
+        hyperparameter_selection="not recorded; configuration snapshot retained",
         python=platform.python_version(),
         versions={name: importlib.metadata.version(name) for name in dependencies},
         source_sha256={

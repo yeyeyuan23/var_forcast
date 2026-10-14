@@ -1,0 +1,26 @@
+output: ../../results/research_study/comparisons
+block_length: 20
+bootstrap_draws: 2000
+seed: 42
+groups:
+  selected:
+    Historical: ../../results/historical/20261014T164600Z-fou16qzh
+    Linear QR: ../../results/linear_qr/20261014T164706Z-4f08dsdr
+    GARCH-t: ../../results/garch/20261014T164802Z-6y5egttq
+    MLP: ../../results/mlp_qr/20261014T165036Z-7mnr0eg1
+    GRU: ../../results/gru_qr/20261014T165223Z-ocb03yg9
+    Transformer: ../../results/transformer_qr/20261014T165620Z-2mlgo14e
+  matched_sequence:
+    MLP: ../../results/mlp_qr/20261014T165036Z-7mnr0eg1
+    GRU: ../../results/gru_qr/20261014T162650Z-cuogj_zb
+    Transformer: ../../results/transformer_qr/20261014T165820Z-v8190qz3
+  matched_linear:
+    Linear QR: ../../results/linear_qr/20261014T164706Z-4f08dsdr
+    MLP: ../../results/mlp_qr/20261014T170134Z-yrxl66a5
+  seeds:
+    MLP seed 17: ../../results/mlp_qr/20261014T170147Z-g9l1vvvu
+    MLP seed 42: ../../results/mlp_qr/20261014T165036Z-7mnr0eg1
+    MLP seed 73: ../../results/mlp_qr/20261014T170206Z-3ipimn46
+    GRU seed 17: ../../results/gru_qr/20261014T170218Z-09_w0tto
+    GRU seed 42: ../../results/gru_qr/20261014T162650Z-cuogj_zb
+    GRU seed 73: ../../results/gru_qr/20261014T170408Z-toyf0iuu

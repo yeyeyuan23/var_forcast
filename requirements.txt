@@ -6,3 +6,4 @@ torch==2.14.1
 matplotlib==3.10.8
 pytest==9.1.1
 PyYAML==6.0.3
+arch==8.0.0

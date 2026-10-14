@@ -1,0 +1,5 @@
+# Consecutive dates immediately preceding the final evaluation period.
+validation_size: 500
+windows: [500, 1000]
+lookbacks: [1, 20]
+distributions: [normal, t]

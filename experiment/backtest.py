@@ -10,7 +10,9 @@ from ..models import forecast
 def rolling_backtest(table, start, stop, config, progress=None):
     """第 i 行为预测目标；训练固定取 [i-window, i)，绝不包含 y_i。"""
     window, method = config.window, config.model
-    lookback = config.lookback if method in ("mlp_qr", "gru_qr") else 1
+    lookback = (
+        config.lookback if method in ("mlp_qr", "gru_qr", "transformer_qr") else 1
+    )
     offset = lookback - 1
     if start < window + offset or stop > len(table) or start >= stop:
         raise ValueError("评估范围无效或没有足够的训练数据")
@@ -20,7 +22,7 @@ def rolling_backtest(table, start, stop, config, progress=None):
         raise ValueError("监督表日期必须唯一且有序")
     inputs = (
         make_feature_sequences(table, lookback)
-        if method in ("mlp_qr", "gru_qr")
+        if method in ("mlp_qr", "gru_qr", "transformer_qr")
         else table[FEATURES].to_numpy()
     )
     records = []

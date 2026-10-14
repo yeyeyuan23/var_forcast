@@ -7,14 +7,28 @@ import yaml
 
 DEFAULT_CONFIG = Path(__file__).resolve().with_name("experiment.yaml")
 DEFAULT_DATA = Path(__file__).resolve().parents[2] / "spy_data.csv"
-METHODS = ("historical", "linear_qr", "mlp_qr", "gru_qr")
+METHODS = ("historical", "linear_qr", "mlp_qr", "gru_qr", "garch", "transformer_qr")
 LABELS = {
     "historical": "Historical",
     "linear_qr": "Linear QR",
     "mlp_qr": "MLP QR",
     "gru_qr": "GRU QR",
+    "garch": "GARCH",
+    "transformer_qr": "Transformer QR",
 }
+NEURAL_MODELS = ("mlp_qr", "gru_qr", "transformer_qr")
 MODEL_FIELDS = {
+    "garch": ("window", "distribution"),
+    "transformer_qr": (
+        "window",
+        "lookback",
+        "epochs",
+        "hidden",
+        "heads",
+        "learning_rate",
+        "weight_decay",
+        "seed",
+    ),
     "gru_qr": (
         "window",
         "lookback",
@@ -62,6 +76,8 @@ class Config:
     weight_decay: float = 0.001
     seed: int = 42
     lookback: int = 1
+    distribution: str = "t"
+    heads: int = 2
 
     def __post_init__(self):
         if not isinstance(self.model, str) or self.model not in METHODS:
@@ -71,6 +87,15 @@ class Config:
         integer(self.hidden, "hidden", 1)
         integer(self.seed, "seed", 0)
         integer(self.lookback, "lookback", 1)
+        integer(self.heads, "heads", 1)
+        if self.distribution not in ("normal", "t"):
+            raise ValueError("distribution must be normal or t")
+        if self.model == "transformer_qr" and (
+            self.hidden % self.heads or self.hidden % 2
+        ):
+            raise ValueError(
+                "Transformer hidden size must be even and divisible by heads"
+            )
         if not self.alphas:
             raise ValueError("alphas 不能为空")
         for alpha in self.alphas:

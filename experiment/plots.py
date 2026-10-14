@@ -17,12 +17,21 @@ import numpy as np
 from ..models import LABELS
 
 COLORS = {
+    "garch": "#BC8B26",
+    "transformer_qr": "#268C90",
     "historical": "#3366A1",
     "linear_qr": "#708044",
     "mlp_qr": "#C16884",
     "gru_qr": "#7A64A3",
 }
-HATCHES = {"historical": "", "linear_qr": "..", "mlp_qr": "xx", "gru_qr": "//"}
+HATCHES = {
+    "garch": "++",
+    "transformer_qr": "oo",
+    "historical": "",
+    "linear_qr": "..",
+    "mlp_qr": "xx",
+    "gru_qr": "//",
+}
 
 
 def prepare_axes(axes):
